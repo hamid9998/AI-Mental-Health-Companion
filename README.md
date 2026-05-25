@@ -1,2 +1,3 @@
 # AI Mental Health Companion project
-AI semester project
+
+# AI-Mental-Health-Companion
