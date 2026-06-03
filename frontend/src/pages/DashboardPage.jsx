@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react"
-
 import API from "../services/api"
-
 import "../styles/dashboard.css"
+import Navbar from "../components/Navbar"
 
 import {
   Chart as ChartJS,
@@ -10,18 +9,20 @@ import {
   LinearScale,
   PointElement,
   LineElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend
 } from "chart.js"
 
-import { Line } from "react-chartjs-2"
+import { Line, Pie } from "react-chartjs-2"
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend
@@ -30,11 +31,10 @@ ChartJS.register(
 function DashboardPage() {
 
   const [journals, setJournals] = useState([])
-  const [loading, setLoading] = useState(true)  
+  const [loading, setLoading] = useState(true)
+
   useEffect(() => {
-
     fetchJournals()
-
   }, [])
 
   const fetchJournals = async () => {
@@ -43,30 +43,155 @@ function DashboardPage() {
 
       const response = await API.get("/journals")
 
-      setJournals(response.data)
-      setLoading(false)
+      setJournals(
+        Array.isArray(response.data)
+          ? response.data
+          : []
+      )
 
     } catch (error) {
 
       console.log(error)
 
+    } finally {
+
+      setLoading(false)
+
     }
 
   }
 
-  // Mood score mapping
   const moodMap = {
     joy: 5,
-    sadness: -3,
-    anger: -4,
-    fear: -2,
     love: 4,
     surprise: 2,
-    neutral: 0
+    neutral: 0,
+    fear: -2,
+    sadness: -3,
+    anger: -4
   }
 
-  const chartData = {
-    labels: journals.map((_, index) => `Entry ${index + 1}`),
+  if (loading) {
+
+  return (
+    <>
+      <Navbar />
+
+      <div className="dashboard-container">
+        <h1>Loading Analytics...</h1>
+      </div>
+    </>
+  )
+
+}
+
+  if (journals.length === 0) {
+
+  return (
+    <>
+      <Navbar />
+
+      <div className="dashboard-container">
+        <h1>No Journal Data Yet</h1>
+        <p>Start writing journals to see analytics.</p>
+      </div>
+    </>
+  )
+
+}
+
+  const emotionCount = {}
+
+  journals.forEach((journal) => {
+
+    emotionCount[journal.emotion] =
+      (emotionCount[journal.emotion] || 0) + 1
+
+  })
+
+  const totalJournals = journals.length
+
+  const mostCommonEmotion =
+    Object.keys(emotionCount).length > 0
+      ? Object.keys(emotionCount).reduce(
+          (a, b) =>
+            emotionCount[a] > emotionCount[b]
+              ? a
+              : b
+        )
+      : "neutral"
+
+  const moodScores = journals.map(
+    (journal) =>
+      moodMap[journal.emotion] || 0
+  )
+
+  const averageMood =
+    moodScores.length > 0
+      ? (
+          moodScores.reduce(
+            (a, b) => a + b,
+            0
+          ) / moodScores.length
+        ).toFixed(1)
+      : 0
+
+  const trend =
+    averageMood > 1
+      ? "Improving"
+      : averageMood < -1
+      ? "Declining"
+      : "Stable"
+
+  const moodStatus =
+    averageMood >= 3
+      ? "Excellent"
+      : averageMood >= 1
+      ? "Good"
+      : averageMood >= 0
+      ? "Neutral"
+      : "Needs Attention"
+
+  const recommendations = {
+
+    sadness: [
+      "Talk with supportive friends.",
+      "Take a short walk outdoors.",
+      "Write positive thoughts."
+    ],
+
+    fear: [
+      "Practice deep breathing.",
+      "Reduce stress triggers.",
+      "Try mindfulness exercises."
+    ],
+
+    anger: [
+      "Take a short break.",
+      "Avoid heated discussions.",
+      "Try relaxation exercises."
+    ],
+
+    joy: [
+      "Keep your healthy routine.",
+      "Celebrate small wins.",
+      "Continue journaling."
+    ]
+
+  }
+
+  const activeSuggestions =
+    recommendations[mostCommonEmotion] || [
+      "Maintain healthy habits.",
+      "Stay hydrated.",
+      "Get enough sleep."
+    ]
+
+  const lineChartData = {
+
+    labels: journals.map(
+      (_, index) => `Entry ${index + 1}`
+    ),
 
     datasets: [
       {
@@ -77,40 +202,41 @@ function DashboardPage() {
             moodMap[journal.emotion] || 0
         ),
 
-        borderColor: "#4F46E5",
+        borderColor: "#8B5CF6",
 
-        backgroundColor: "#4F46E5"
+        backgroundColor: "#8B5CF6",
+
+        tension: 0.4
       }
     ]
+
   }
 
-  // Total journals
-  const totalJournals = journals.length
+  const pieChartData = {
 
-  // Most common emotion
-  const emotionCount = {}
+    labels: Object.keys(emotionCount),
 
-  journals.forEach((journal) => {
+    datasets: [
+      {
+        data: Object.values(emotionCount),
 
-    emotionCount[journal.emotion] =
-      (emotionCount[journal.emotion] || 0) + 1
+        backgroundColor: [
+          "#22C55E",
+          "#3B82F6",
+          "#EF4444",
+          "#F59E0B",
+          "#8B5CF6",
+          "#6B7280"
+        ]
+      }
+    ]
 
-  })
-
-  const mostCommonEmotion =
-    Object.keys(emotionCount).reduce(
-      (a, b) =>
-        emotionCount[a] > emotionCount[b]
-          ? a
-          : b,
-      "None"
-    )
-
-    if (loading) {
-  return <h1>Loading Dashboard...</h1>
-}
+  }
 
   return (
+    <>
+      <Navbar />
+
     <div className="dashboard-container">
 
       <h1 className="dashboard-title">
@@ -130,94 +256,129 @@ function DashboardPage() {
         </div>
 
         <div className="stat-card">
-          <h2>Latest Mood</h2>
+          <h2>Average Mood</h2>
+          <p>{averageMood}</p>
+        </div>
 
-          <p>
-            {
-              journals.length > 0
-                ? journals[journals.length - 1].emotion
-                : "N/A"
+        <div className="stat-card">
+          <h2>Mental Wellness</h2>
+          <p>{moodStatus}</p>
+        </div>
+
+        <div className="stat-card">
+          <h2>Trend</h2>
+          <p>{trend}</p>
+        </div>
+
+      </div>
+
+      <div className="chart-container">
+
+        <h2>Mood Trend Analysis</h2>
+
+        <Line data={lineChartData} />
+
+      </div>
+
+      <div className="chart-container">
+
+  <h2>Emotion Distribution</h2>
+
+  <div className="pie-chart-wrapper">
+
+    <Pie
+      data={pieChartData}
+      options={{
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: {
+              color: "#ffffff"
             }
-          </p>
+          }
+        }
+      }}
+    />
 
-        </div>
-
-      </div>
-
-      <div className="chart-container">
-
-        <h2 style={{ marginBottom: "20px" }}>
-          Mood Trends
-        </h2>
-
-        <Line data={chartData} />
-
-      </div>
-
-
-      <div className="chart-container">
-
-  <h2 style={{ marginBottom: "20px" }}>
-    Recent Journals
-  </h2>
-
-  {
-    journals.slice(-5).reverse().map(
-      (journal, index) => (
-
-        <div
-          key={index}
-          style={{
-            padding: "15px",
-            borderBottom: "1px solid #ddd"
-          }}
-        >
-
-          <p>
-            <strong>Text:</strong>
-            {" "}
-            {journal.text}
-          </p>
-
-          <p>
-            <strong>Emotion:</strong>
-            {" "}
-            {journal.emotion}
-          </p>
-
-        </div>
-
-      )
-    )
-  }
+  </div>
 
 </div>
 
+      <div className="chart-container">
+
+        <h2>AI Insights</h2>
+
+        <p>• Most Common Emotion: {mostCommonEmotion}</p>
+
+        <p>• Average Mood Score: {averageMood}</p>
+
+        <p>• Emotional Trend: {trend}</p>
+
+        <p>• Total Journal Entries: {totalJournals}</p>
+
+      </div>
+
+      <div className="chart-container">
+
+        <h2>Recent Journals</h2>
+
+        {
+          journals
+            .slice(-5)
+            .reverse()
+            .map((journal, index) => (
+
+              <div
+                key={index}
+                className="recent-journal"
+              >
+
+                <p>
+                  <strong>Journal:</strong> {journal.text}
+                </p>
+
+                <p>
+                  <strong>Emotion:</strong> {journal.emotion}
+                </p>
+
+                <p>
+                  <strong>Confidence:</strong> {journal.score}%
+                </p>
+
+              </div>
+
+            ))
+        }
+
+      </div>
+
       <div className="suggestion-box">
 
-        <h2>AI Wellness Suggestion</h2>
+        <h2>
+          AI Wellness Recommendations
+        </h2>
 
-        <p>
+        <ul>
 
           {
-            mostCommonEmotion === "sadness"
-              ? "Consider taking breaks and talking to supportive people."
-
-              : mostCommonEmotion === "fear"
-              ? "Practice breathing exercises and relaxation."
-
-              : mostCommonEmotion === "joy"
-              ? "Great emotional progress! Keep your healthy routine."
-
-              : "Maintain emotional balance with healthy habits."
+            activeSuggestions.map(
+              (item, index) => (
+                <li key={index}>
+                  {item}
+                </li>
+              )
+            )
           }
 
-        </p>
+        </ul>
 
       </div>
 
     </div>
+            </>
   )
+
 }
 
-export default DashboardPage
+export default DashboardPage 

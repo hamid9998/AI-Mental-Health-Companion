@@ -1,98 +1,138 @@
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-import "../styles/auth.css"
-import API from "../services/api"
+import API from "../services/api";
 
 function RegisterPage() {
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: ""
-  })
+  });
 
   const handleChange = (e) => {
+
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
-    })
-  }
+    });
 
-  const handleRegister = async () => {
+  };
+
+  const handleRegister = async (e) => {
+
+    e.preventDefault();
 
     try {
+
+      setLoading(true);
 
       const response = await API.post(
         "/signup",
         formData
-      )
+      );
 
-      alert(response.data.message)
+      alert(response.data.message);
 
-      navigate("/login")
+      navigate("/login");
 
     } catch (error) {
 
-      alert("Registration failed")
+      console.log(error);
+
+      alert("Registration Failed");
+
+    } finally {
+
+      setLoading(false);
 
     }
 
-  }
+  };
 
   return (
-    <div className="auth-container">
 
-      <div className="auth-box">
+    <div className="auth-page">
 
-        <h1 className="auth-title">
+      <div className="auth-card">
+
+        <h1>
           Create Account
         </h1>
 
-        <input
-          type="text"
-          name="name"
-          placeholder="Enter full name"
-          className="auth-input"
-          onChange={handleChange}
-        />
+        <p>
+          Start your AI-powered mental wellness journey.
+        </p>
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Enter email"
-          className="auth-input"
-          onChange={handleChange}
-        />
+        <form onSubmit={handleRegister}>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Enter password"
-          className="auth-input"
-          onChange={handleChange}
-        />
+          <input
+            type="text"
+            name="name"
 
-        <button
-          className="auth-button"
-          onClick={handleRegister}
-        >
-          Register
-        </button>
+            placeholder="Full Name"
 
-        <div className="auth-link">
-          <p>
+            value={formData.name}
+
+            onChange={handleChange}
+          />
+
+          <input
+            type="email"
+            name="email"
+
+            placeholder="Email Address"
+
+            value={formData.email}
+
+            onChange={handleChange}
+          />
+
+          <input
+            type="password"
+            name="password"
+
+            placeholder="Create Password"
+
+            value={formData.password}
+
+            onChange={handleChange}
+          />
+
+          <button
+            type="submit"
+          >
+            {
+              loading
+                ? "Creating Account..."
+                : "Register"
+            }
+          </button>
+
+        </form>
+
+        <div className="auth-footer">
+
+          <span>
             Already have an account?
-            <Link to="/login"> Login</Link>
-          </p>
+          </span>
+
+          <Link to="/login">
+            Login
+          </Link>
+
         </div>
 
       </div>
 
     </div>
-  )
+
+  );
 }
 
-export default RegisterPage
+export default RegisterPage;

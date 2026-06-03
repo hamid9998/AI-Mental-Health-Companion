@@ -1,64 +1,96 @@
-import Navbar from "../components/Navbar"
+import { Link } from "react-router-dom";
+import Navbar from "../components/Navbar";
 
 function LandingPage() {
   return (
-    <div>
-
+    <>
       <Navbar />
 
-      <div
-        style={{
-          height: "90vh",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          background: "#EEF2FF",
-          textAlign: "center",
-          padding: "20px"
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "60px",
-            color: "#4F46E5",
-            marginBottom: "20px"
-          }}
-        >
-          AI Mental Health Companion
-        </h1>
+      <div className="hero">
 
-        <p
-          style={{
-            fontSize: "22px",
-            maxWidth: "700px",
-            color: "#444",
-            marginBottom: "30px"
-          }}
-        >
-          Your private, judgment-free emotional support system.
-          Track your emotions, analyze mood patterns,
-          and receive AI-powered wellness suggestions.
-        </p>
+        <div className="hero-content">
 
-        <button
-          style={{
-            padding: "15px 30px",
-            fontSize: "18px",
-            backgroundColor: "#4F46E5",
-            color: "white",
-            border: "none",
-            borderRadius: "10px",
-            cursor: "pointer"
-          }}
-        >
-          Get Started
-        </button>
+          <h1>
+            Your Personal AI Mental Health Companion
+          </h1>
+
+          <p>
+            Understand your emotions, track your mental wellness,
+            and discover emotional patterns using advanced AI-powered
+            sentiment analysis and analytics.
+          </p>
+
+          <div className="hero-buttons">
+
+            <Link to="/journal">
+              <button className="primary-btn">
+                Start Journaling
+              </button>
+            </Link>
+
+            <Link to="/dashboard">
+              <button className="secondary-btn">
+                View Dashboard
+              </button>
+            </Link>
+
+          </div>
+
+        </div>
+
+        <div className="features">
+
+          <div className="card">
+            <h3>🧠 Emotion Detection</h3>
+
+            <p>
+              Analyze your feelings instantly using
+              Hugging Face AI emotion models.
+            </p>
+          </div>
+
+          <div className="card">
+            <h3>📊 Analytics Dashboard</h3>
+
+            <p>
+              Visualize emotional trends and monitor
+              your mental wellness journey.
+            </p>
+          </div>
+
+          <div className="card">
+            <h3>☁️ Secure Cloud Storage</h3>
+
+            <p>
+              Your journals are securely stored in
+              MongoDB Atlas cloud database.
+            </p>
+          </div>
+
+        </div>
+
+        <div className="stats-section">
+
+          <div className="stat-box">
+            <h2>AI Powered</h2>
+            <p>Emotion Recognition</p>
+          </div>
+
+          <div className="stat-box">
+            <h2>24/7</h2>
+            <p>Mental Wellness Tracking</p>
+          </div>
+
+          <div className="stat-box">
+            <h2>Secure</h2>
+            <p>Cloud Data Storage</p>
+          </div>
+
+        </div>
 
       </div>
-
-    </div>
-  )
+    </>
+  );
 }
 
-export default LandingPage
+export default LandingPage;

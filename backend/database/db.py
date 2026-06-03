@@ -1,11 +1,5 @@
-import os
 from pymongo import MongoClient
-from dotenv import load_dotenv
 
-load_dotenv()
-
-MONGO_URI = os.getenv("MONGO_URI")
-
-client = MongoClient(MONGO_URI)
+client = MongoClient("mongodb://localhost:27017/")
 
 db = client["mental_health_db"]

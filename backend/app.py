@@ -19,13 +19,32 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(journal_router)
 
+
 @app.get("/")
 def home():
-    return {"message": "Backend Running Successfully"}
+    return {
+        "message": "Backend Running Successfully"
+    }
+
 
 @app.get("/test-db")
 def test_db():
-    return {
-        "database": str(db.name),
-        "status": "Connected Successfully"
-    }
+
+    try:
+
+        # Real MongoDB Connection Test
+        db.command("ping")
+
+        collections = db.list_collection_names()
+
+        return {
+            "database": str(db.name),
+            "collections": collections,
+            "status": "MongoDB Connected Successfully"
+        }
+
+    except Exception as e:
+
+        return {
+            "error": str(e)
+        }

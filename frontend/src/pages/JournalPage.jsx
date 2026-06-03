@@ -1,110 +1,94 @@
-import { useState } from "react"
-import API from "../services/api"
+import { useState } from "react";
+import API from "../services/api";
+import Navbar from "../components/Navbar";
 
 function JournalPage() {
+  const [text, setText] = useState("");
+  const [result, setResult] = useState(null);
+const [aiResponse, setAiResponse] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const [text, setText] = useState("")
-  const [result, setResult] = useState(null)
-
-  const handleSubmit = async () => {
-
-    try {
-
-      const response = await API.post(
-        "/journal",
-        { text }
-      )
-
-      setResult(response.data.analysis)
-
-    } catch (error) {
-
-      alert("Failed to analyze journal")
-
+  const analyzeEmotion = async () => {
+    if (!text.trim()) {
+      alert("Please write something in your journal.");
+      return;
     }
 
-  }
+    try {
+      setLoading(true);
+
+      const response = await API.post("/journal", {
+        text: text,
+      });
+
+      setResult(response.data.analysis);
+
+setAiResponse(
+  response.data.ai_response
+);
+
+setAiResponse(
+  response.data.ai_response
+);
+
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      alert("Error analyzing emotion");
+      setLoading(false);
+    }
+  };
 
   return (
-    <div
-      style={{
-        padding: "40px",
-        backgroundColor: "#EEF2FF",
-        minHeight: "100vh"
-      }}
-    >
+    <>
+      <Navbar />
 
-      <h1
-        style={{
-          color: "#4F46E5",
-          marginBottom: "20px"
-        }}
-      >
-        Write Your Thoughts
-      </h1>
+      <div className="journal-container">
+        <h1>Write Your Journal</h1>
 
-      <textarea
-        rows="10"
-        placeholder="How are you feeling today?"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        style={{
-          width: "100%",
-          padding: "20px",
-          borderRadius: "10px",
-          border: "1px solid #ccc",
-          marginBottom: "20px",
-          fontSize: "16px"
-        }}
-      />
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Write your thoughts here..."
+        ></textarea>
 
-      <button
-        onClick={handleSubmit}
-        style={{
-          padding: "15px 30px",
-          backgroundColor: "#4F46E5",
-          color: "white",
-          border: "none",
-          borderRadius: "10px",
-          cursor: "pointer"
-        }}
-      >
-        Analyze Emotion
-      </button>
+        <button onClick={analyzeEmotion}>
+          {loading ? "Analyzing..." : "Analyze Emotion"}
+        </button>
 
-      {
-        result && (
+        {result && (
+          <div className="result-card">
+            <h2>Emotion Analysis</h2>
+            <p>
+  <strong>Confidence:</strong>{" "}
+{Number(result.score).toFixed(2)}%
+</p>
+<hr
+  style={{
+    margin: "20px 0",
+    opacity: 0.2
+  }}
+/>
 
-          <div
-            style={{
-              marginTop: "30px",
-              backgroundColor: "white",
-              padding: "20px",
-              borderRadius: "10px"
-            }}
-          >
 
-            <h2>Emotion Analysis Result</h2>
+
+<h3>
+  🤖 MindAI Assistant
+</h3>
+
+<p>
+  {aiResponse}
+</p>
 
             <p>
-              <strong>Emotion:</strong>
-              {" "}
-              {result.emotion}
-            </p>
-
-            <p>
-              <strong>Confidence:</strong>
-              {" "}
-              {result.score}%
-            </p>
-
+  <strong>Confidence:</strong>{" "}
+  {Number(result.score).toFixed(2)}%
+</p>
           </div>
-
-        )
-      }
-
-    </div>
-  )
+        )}
+      </div>
+    </>
+  );
 }
 
-export default JournalPage
+export default JournalPage;
